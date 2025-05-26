@@ -1,0 +1,71 @@
+<div class="container mt-4">
+    <div class="card shadow w-100">
+        <div class="card-header bg-success text-white">
+            Cadastro de Tarefa
+        </div>
+        <div class="card-body">
+            <div class="alert alert-primary alert-dismissible fade show" role="alert" 
+                 *ngIf="mensagem != ''">
+                <strong>{{ mensagem }}</strong>
+                <button type="button" class="btn-close" (click)="mensagem = ''" 
+                        aria-label="Close"></button>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+                <div class="mb-3">
+                    <label for="titulo" class="form-label">Título da Tarefa</label>
+                    <input type="text" class="form-control" id="titulo" formControlName="titulo" placeholder="Digite o título da tarefa">
+                    <span class="text-danger" *ngIf="formControls['titulo'].touched && formControls['titulo'].invalid">
+                        Por favor, informe o título da tarefa com no maximo 100 caracteres.
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descrição da Tarefa</label>
+                    <input type="text" class="form-control" id="descricao" formControlName="descricao" placeholder="Digite a descrição da tarefa">
+                    <span class="text-danger" *ngIf="formControls['descricao'].touched && formControls['descricao'].invalid">
+                        A descrição da tarefa somente poderá 300 caracteres no maximo.
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6 d-flex flex-column">
+                            <label for="dataCriacao" class="form-label">Data de Criação</label>
+                            <input type="date" class="form-control w-75" id="dataCriacao" formControlName="dataCriacao">
+                        </div>
+                        <div class="col-md-6 d-flex flex-column">
+                            <label for="dataConclusao" class="form-label">Data de Conclusão</label>
+                            <input type="date" class="form-control w-75" id="dataConclusao" formControlName="dataConclusao">
+                        </div>
+                    </div>
+                    <span class="text-danger" *ngIf="form.errors?.['dataConclusaoInvalida']">
+                        A data de conclusão deve ser maior ou igual à data de criação.
+                    </span>
+
+                    <span class="text-danger" *ngIf="form.errors?.['dataCriacaoObrigatoria']">
+                        A data de criação é obrigatória quando a data de conclusão é informada.
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="categoria" class="form-label">Estado</label>
+                    <select class="form-select" id="categoria" formControlName="estado">
+                        <option selected disabled>Selecione o estado da tarefa</option>
+                        <option *ngFor="let status of estadoTarefaLista" [value]="status.codigo">
+                            {{ status.descricao }}
+                        </option>
+                    </select>
+                    <span class="text-danger" *ngIf="formControls['estado'].touched && formControls['estado'].invalid">
+                        Por favor, selecione estado da tarefa.
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <input type="submit" class="btn btn-success" 
+                        [disabled]="!isFormValid()" value="Salvar"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

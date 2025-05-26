@@ -1,0 +1,149 @@
+<div class="container mt-4">
+    <div class="card shadow w-100">
+        <div class="card-header bg-success text-white">
+            Consulta de Tarefa
+        </div>
+        <div class="card-body">
+            <div class="alert alert-primary alert-dismissible fade show" role="alert" *ngIf="mensagem != ''">
+                <strong>{{ mensagem }}</strong>
+                <button type="button" class="btn-close" (click)="mensagem = ''" aria-label="Close"></button>
+            </div>
+
+            <form [formGroup]="formPesquisa" (ngSubmit)="onSubmit()">
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6 d-flex flex-column">
+                            <div>
+                                <label for="categoria" class="form-label">Estado</label>
+                            </div>
+                            <table>
+                                <td>
+                                    <select class="form-select" id="categoria" formControlName="estado">
+                                        <option selected disabled>Selecione o estado da tarefa</option>
+                                        <option *ngFor="let status of estadoTarefaLista" [value]="status.codigo">
+                                            {{ status.descricao }}
+                                        </option>
+                                    </select>
+                                </td>
+                                <td style="text-align: right;">
+                                    <input type="submit" class="btn btn-success" [disabled]="!isFormValid()"
+                                        value="Pesquisar" />
+                                </td>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Titulo</th>
+                                    <th>Descrição</th>
+                                    <th>Data de criação</th>
+                                    <th>Data de conclusão</th>
+                                    <th>Estado</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let t of tarefas">
+                                    <td> {{ t.titulo | uppercase }} </td>
+                                    <td> {{ t.descricao | lowercase }} </td>
+                                    <td> {{ t.dataCriacao | date : 'dd/MM/yyyy' }} </td>
+                                    <td> {{ t.dataConclusao | date : 'dd/MM/yyyy' }} </td>
+                                    <td> {{ obterEstado(t.estado) }} </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success me-1" (click)="abrirModal(t)">
+                                            Editar
+                                        </button>
+
+                                        <button (click)="onDelete(t.id)" class="btn btn-sm btn-success me-1">
+                                            Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6">
+                                        Quantidade de clientes: {{ tarefas.length }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalLabel">Atualizar tarefa</h5>
+                <button type="button" class="btn-close" (click)="fecharModal()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="formEdicao" (ngSubmit)="onUpdate()">
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título da Tarefa</label>
+                        <input type="text" class="form-control" id="titulo" formControlName="titulo">
+                        <span class="text-danger" *ngIf="formControls['titulo'].touched && formControls['titulo'].invalid">
+                            Por favor, informe o título da tarefa com no maximo 100 caracteres.
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição da Tarefa</label>
+                        <input type="text" class="form-control" id="descricao" formControlName="descricao">
+                        <span class="text-danger" *ngIf="formControls['descricao'].touched && formControls['descricao'].invalid">
+                            A descrição da tarefa somente poderá 300 caracteres no maximo.
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dataCriacao" class="form-label">Data de Criação</label>
+                        <input type="date" class="form-control" id="dataCriacao" formControlName="dataCriacao">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dataConclusao" class="form-label">Data de Conclusão</label>
+                        <input type="date" class="form-control" id="dataConclusao" formControlName="dataConclusao">
+                    </div>
+                    
+                    <div>
+                        <span class="text-danger" *ngIf="formEdicao.errors?.['dataConclusaoInvalida']">
+                            A data de conclusão deve ser maior ou igual à data de criação.
+                        </span>
+
+                        <span class="text-danger" *ngIf="formEdicao.errors?.['dataCriacaoObrigatoria']">
+                            A data de criação é obrigatória quando a data de conclusão é informada.
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" formControlName="estado">
+                            <option *ngFor="let status of estadoTarefaLista" [value]="status.codigo">
+                                {{ status.descricao }}
+                            </option>
+                        </select>
+                        <span class="text-danger" *ngIf="formControls['estado'].touched && formControls['estado'].invalid">
+                            Por favor, selecione estado da tarefa.
+                        </span>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="fecharModal()">Fechar</button>
+                        <button type="submit" class="btn btn-success" [disabled]="!isFormValidModel()">Atualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
